@@ -22,8 +22,14 @@ func main() {
 	fmt.Printf("%+v\n",header)
 	C.inc(C.int(len(c)), (*C.int)(unsafe.Pointer(header.Data)))
 	fmt.Println(c)
+	var goint int
+	fmt.Println(unsafe.Sizeof(goint))
+	var cint C.int
+	fmt.Println(unsafe.Sizeof(cint))
 }
 
 // go run main.go 
 // &{Data:824633811712 Len:4 Cap:4}
 // [4294967298 4294967299 3 4]
+// 8
+// 4
