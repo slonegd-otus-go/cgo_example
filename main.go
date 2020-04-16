@@ -3,33 +3,24 @@ package main
 /*
 #include <stdint.h>
 
-void inc(int size, int* res) {
-	for (int i = 0; i < size; i++) {
-		(*(res+i))++;
-	}
+typedef struct {
+	int a;
+	int b;
+} some;
+
+void inc(some* v) {
+	v->a++;
+	v->b++;
 }
 */
 import "C"
 import (
 	"fmt"
-	"unsafe"
-	"reflect"
 ) 
 
 func main() {
-	c := []int{1,2,3,4}
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&c))
-	fmt.Printf("%+v\n",header)
-	C.inc(C.int(len(c)), (*C.int)(unsafe.Pointer(header.Data)))
-	fmt.Println(c)
-	var goint int
-	fmt.Println(unsafe.Sizeof(goint))
-	var cint C.int
-	fmt.Println(unsafe.Sizeof(cint))
+	v := C.some{a:1,b:2}
+	C.inc(&v)
+	fmt.Printf("%+v\n", v) // {a:2 b:3}
 }
 
-// go run main.go 
-// &{Data:824633811712 Len:4 Cap:4}
-// [4294967298 4294967299 3 4]
-// 8
-// 4
