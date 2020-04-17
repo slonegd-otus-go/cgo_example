@@ -6,12 +6,14 @@ package main
 typedef struct {
 	int a;
 	int b;
+	union {
+		uint8_t c;
+		uint16_t d;
+	} u;
 } some;
 
-some ar[2] = {{1,2}, {3,4}};
-
-some* get_some() { return ar; }
-int   len()      { return 2; }
+some v1 = {1,2,3};
+some v2 = {1,2,{.d=4}};
 */
 import "C"
 import (
@@ -20,25 +22,20 @@ import (
 )
 
 func main() {
-	vs := C.get_some()
-	len := C.len()
-	fmt.Printf("%+v\n", vs)        // &{a:1 b:2}
-	fmt.Printf("%+v\n", len)       // 2
-	inc(int(len), vs)
-	fmt.Printf("%+v\n", vs)        // {a:2 b:3}
-	fmt.Printf("%+v\n", get(1,vs)) // {a:4 b:5}
+	fmt.Printf("%+v\n", C.v1) // {a:1 b:2 u:[3 0] _:[0 0]}
+	fmt.Printf("%+v\n", C.v2) // {a:1 b:2 u:[4 0] _:[0 0]}
+	fmt.Printf("%+v\n", getC(C.v1)) // 3
+	fmt.Printf("%+v\n", getC(C.v1)) // 3
+	fmt.Printf("%+v\n", getD(C.v2)) // 4
+	fmt.Printf("%+v\n", getD(C.v2)) // 4
 }
 
-func inc(len int, vs *C.some) {
-	for i := 0; i < len; i++ {
-		v := get(i, vs)
-		v.a++
-		v.b++
-	}
+func getC(v C.some) uint8 {
+	u := *(*C.uint8_t)(unsafe.Pointer(&v.u[0]))
+	return uint8(u)
 }
 
-func get(i int, vs *C.some) *C.some {
-	p := uintptr(unsafe.Pointer(vs))
-	p += uintptr(i)*unsafe.Sizeof(*vs)
-	return (*C.some)(unsafe.Pointer(p))
+func getD(v C.some) uint16 {
+	u := *(*C.uint16_t)(unsafe.Pointer(&v.u[0]))
+	return uint16(u)
 }
